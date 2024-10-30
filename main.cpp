@@ -51,8 +51,8 @@ int main() {
   // draw a circle at the pupil
   cv::circle(frame, pupil, 10, cv::Scalar(0, 0, 255), 2);
   // show the frame
-  //cv::imshow("frame", frame);
-  //cv::waitKey(0);
+  // cv::imshow("frame", frame);
+  // cv::waitKey(0);
 
   // loop through all frames and find the pupil based on the last location
   while (true) {
@@ -82,7 +82,7 @@ int main() {
     // draw box around pupil
     auto pupilBox = findPupilBox(frame, pupil, 50);
     // print the pupil box
-    //std::cout << "Pupil box: " << pupilBox << std::endl;
+    // std::cout << "Pupil box: " << pupilBox << std::endl;
     // draw the pupil box
     cv::rectangle(frame, pupilBox, cv::Scalar(0, 255, 0), 2);
 
@@ -97,8 +97,8 @@ int main() {
     checks = 0;
 
     // show the frame
-    //cv::imshow("frame", frame);
-    //cv::waitKey(0);
+    cv::imshow("frame", frame);
+    cv::waitKey(0);
 
     // Write the frame to output file
     outputVideo.write(frame);
@@ -219,31 +219,83 @@ cv::Rect findPupilBox(cv::Mat &frame, coordinate pupilLocation,
   // March left, right, up, down and calculate the bounding area of the pupil
   // using the isPupil function
 
-  auto constexpr steps = 4;
+  auto constexpr steps = 25;
   auto constexpr distance = 20;
 
   // march left
   auto x = pupilLocation.x;
   auto y = pupilLocation.y;
-  while (isPupil(frame, {x, y}, threshhold) || isPupil(frame, {x, y + distance}, threshhold) || isPupil(frame, {x, y - distance}, threshhold)) {
+  while (true) {
+    int i = 0;
+    if (!isPupil(frame, {x, y}, threshhold)) {
+      if (!isPupil(frame, {x, y + distance}, threshhold) &&
+          !isPupil(frame, {x, y - distance}, threshhold)) {
+        for (; i < steps; i++) {
+          x++;
+          if (isPupil(frame, {x, y}, threshhold)) {
+            break;
+          }
+        }
+        break;
+      }
+    }
     x -= steps;
   }
   int left = x;
   x = pupilLocation.x;
   // march right
-  while (isPupil(frame, {x, y}, threshhold) || isPupil(frame, {x, y + distance}, threshhold) || isPupil(frame, {x, y - distance}, threshhold)) {
+  while (true) {
+    int i = 0;
+    if (!isPupil(frame, {x, y}, threshhold)) {
+      if (!isPupil(frame, {x, y + distance}, threshhold) &&
+          !isPupil(frame, {x, y - distance}, threshhold)) {
+        for (; i < steps; i++) {
+          x--;
+          if (isPupil(frame, {x, y}, threshhold)) {
+            break;
+          }
+        }
+        break;
+      }
+    }
     x += steps;
   }
   int right = x;
   x = pupilLocation.x;
   // march up
-  while (isPupil(frame, {x, y}, threshhold) || isPupil(frame, {x+ distance, y}, threshhold) || isPupil(frame, {x - distance, y}, threshhold)) {
+  while (true) {
+    int i = 0;
+    if (!isPupil(frame, {x, y}, threshhold)) {
+      if (!isPupil(frame, {x + distance, y}, threshhold) &&
+          !isPupil(frame, {x - distance, y}, threshhold)) {
+        for (; i < steps; i++) {
+          y++;
+          if (isPupil(frame, {x, y}, threshhold)) {
+            break;
+          }
+        }
+        break;
+      }
+    }
     y -= steps;
   }
   int top = y;
   y = pupilLocation.y;
   // march down
-  while (isPupil(frame, {x, y}, threshhold) || isPupil(frame, {x+ distance, y}, threshhold) || isPupil(frame, {x - distance, y}, threshhold)) {
+  while (true) {
+    int i = 0;
+    if (!isPupil(frame, {x, y}, threshhold)) {
+      if (!isPupil(frame, {x + distance, y}, threshhold) &&
+          !isPupil(frame, {x - distance, y}, threshhold)) {
+        for (; i < steps; i++) {
+          y--;
+          if (isPupil(frame, {x, y}, threshhold)) {
+            break;
+          }
+        }
+        break;
+      }
+    }
     y += steps;
   }
   int bottom = y;
