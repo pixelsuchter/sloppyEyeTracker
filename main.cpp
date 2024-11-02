@@ -17,6 +17,8 @@ cv::Rect findPupilBox(cv::Mat &frame, coordinate pupilLocation, int threshhold);
 static int checks = 0;
 static long long checksum = 0;
 static int frames = 0;
+static cv::Mat displayframe;
+
 
 int main() {
 
@@ -25,6 +27,8 @@ int main() {
 
   cv::Mat frame;
   cap >> frame;
+
+  displayframe = frame.clone();
 
   int width = frame.cols;
   int height = frame.rows;
@@ -60,12 +64,15 @@ int main() {
     // get the next frame
     cap >> frame;
     frames++;
+
+    displayframe = frame.clone();
+
     // if the frame is empty, break
     if (frame.empty()) {
       break;
     }
 
-    cv::rectangle(frame,
+    cv::rectangle(displayframe,
                   cv::Rect(boundingx1, boundingy1, boundingx2 - boundingx1,
                            boundingy2 - boundingy1),
                   cv::Scalar(100, 0, 0));
@@ -84,20 +91,20 @@ int main() {
     // print the pupil box
     // std::cout << "Pupil box: " << pupilBox << std::endl;
     // draw the pupil box
-    cv::rectangle(frame, pupilBox, cv::Scalar(0, 255, 0), 2);
+    cv::rectangle(displayframe, pupilBox, cv::Scalar(0, 255, 0), 1);
 
     // set lastpupillocation to the center of the pupil box
     lastPupilLocation = cv::Point(pupilBox.x + pupilBox.width / 2,
                                   pupilBox.y + pupilBox.height / 2);
     // draw circle at center
-    cv::circle(frame, lastPupilLocation, 10, cv::Scalar(0, 0, 255), 2);
+    cv::circle(displayframe, lastPupilLocation, 10, cv::Scalar(0, 0, 255), 2);
 
     std::cout << "Checks: " << checks << std::endl;
     checksum += checks;
     checks = 0;
 
     // show the frame
-    cv::imshow("frame", frame);
+    cv::imshow("frame", displayframe);
     cv::waitKey(0);
 
     // Write the frame to output file
@@ -134,6 +141,8 @@ coordinate findPupil(cv::Mat &frame, coordinate lastLocation, int x1, int y1,
 bool isPupil(cv::Mat &frame, coordinate where, int threshhold) {
   cv::Vec3b pixel = frame.at<cv::Vec3b>(where);
   checks++;
+  cv::circle(displayframe, where, 1, cv::Scalar(250, 50, 0), 2);
+
   if (pixel[0] < threshhold && pixel[1] < threshhold && pixel[2] < threshhold) {
     return true;
   } else {
